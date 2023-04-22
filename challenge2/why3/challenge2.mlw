@@ -26,6 +26,22 @@ module BDD
     node_content : node;
   }
 
+  (* For isomorphism detection: remove the ids. *)
+  type node_core =
+    | NodeC var node_core node_core
+    | NC_True
+    | NC_False
+  let rec function project_id (n:node_id) : node_core
+    variant { n }
+  = project n.node_content
+  with function project (n:node) : node_core
+    variant { n }
+  = match n with
+    | Node v l r -> NodeC v (project_id l) (project_id r)
+    | N_True     -> NC_True
+    | N_False    -> NC_False
+    end
+
   let predicate equal (n m:node) = match n, m with
     | N_True, N_True -> true
     | N_False, N_False -> true
@@ -155,8 +171,6 @@ module BDD
     table         : hash_table node_id;
     mutable fresh : int;
   }
-  (* Incomplete, the perfect id-node correspondance
-     is not yet stated. *)
   invariant { 0 <= fresh }
   invariant { forall nd:node.
     model_mem table nd ->
@@ -165,7 +179,15 @@ module BDD
     /\ ev.node_id < fresh
     /\ table_link table ev
     /\ ordered ev.node_content
-  } by { table = empty_witness (); fresh = 0 }
+  }
+  (* No duplicates. *)
+  invariant { forall nd1 nd2:node.
+    model_mem table nd1 ->
+    model_mem table nd2 ->
+    let ev1 = model_eval table nd1 in
+    let ev2 = model_eval table nd2 in
+    project_id ev1 = project_id ev2 -> equal nd1 nd2 }
+  by { table = empty_witness (); fresh = 0 }
 
   predicate valid_node_id (b:bdd) (n:node_id) =
     table_link b.table n
@@ -182,6 +204,7 @@ module BDD
     writes   { b.table, b.fresh }
     ensures  { valid_node_id b result }
     ensures  { sub_hash (old b).table b.table }
+    ensures  { project_id result = project n }
   = match find_opt b.table n with
     | Some nd -> nd
     | None ->

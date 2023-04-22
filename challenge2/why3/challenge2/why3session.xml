@@ -3,50 +3,91 @@
 "http://why3.lri.fr/why3session.dtd">
 <why3session shape_version="6">
 <prover id="0" name="Alt-Ergo" version="2.4.2" timelimit="5" steplimit="0" memlimit="1000"/>
-<file format="whyml" proved="true">
+<prover id="1" name="Z3" version="4.11.2" timelimit="5" steplimit="0" memlimit="1000"/>
+<prover id="2" name="CVC5" version="1.0.3" timelimit="5" steplimit="0" memlimit="1000"/>
+<file format="whyml">
 <path name=".."/><path name="challenge2.mlw"/>
-<theory name="BDD" proved="true">
+<theory name="BDD">
+ <goal name="project_id&#39;vc" expl="VC for project_id" proved="true">
+ <proof prover="0"><result status="valid" time="0.00" steps="13"/></proof>
+ </goal>
+ <goal name="project&#39;vc" expl="VC for project" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="62"/></proof>
+ </goal>
  <goal name="equal_refl" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="80"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="93"/></proof>
  </goal>
  <goal name="equal_symm" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="161"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="173"/></proof>
  </goal>
  <goal name="equal_trans" proved="true">
- <proof prover="0"><result status="valid" time="0.06" steps="1148"/></proof>
+ <proof prover="0"><result status="valid" time="0.17" steps="2239"/></proof>
  </goal>
  <goal name="hash_congr" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="108"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="116"/></proof>
  </goal>
  <goal name="compare&#39;vc" expl="VC for compare" proved="true">
- <proof prover="0"><result status="valid" time="0.00" steps="35"/></proof>
+ <proof prover="0"><result status="valid" time="0.00" steps="42"/></proof>
  </goal>
  <goal name="ordered_after&#39;vc" expl="VC for ordered_after" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="59"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="68"/></proof>
  </goal>
  <goal name="ordered_after_record&#39;vc" expl="VC for ordered_after_record" proved="true">
- <proof prover="0"><result status="valid" time="0.00" steps="8"/></proof>
+ <proof prover="0"><result status="valid" time="0.00" steps="16"/></proof>
  </goal>
  <goal name="table_link&#39;vc" expl="VC for table_link" proved="true">
- <proof prover="0"><result status="valid" time="0.00" steps="12"/></proof>
+ <proof prover="0"><result status="valid" time="0.00" steps="20"/></proof>
  </goal>
  <goal name="table_link_cons&#39;vc" expl="VC for table_link_cons" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="57"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="66"/></proof>
  </goal>
  <goal name="table_link_sub&#39;vc" expl="VC for table_link_sub" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="58"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="66"/></proof>
  </goal>
  <goal name="table_link_sub_cons&#39;vc" expl="VC for table_link_sub_cons" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="133"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="144"/></proof>
  </goal>
  <goal name="empty_witness&#39;vc" expl="VC for empty_witness" proved="true">
- <proof prover="0"><result status="valid" time="0.00" steps="5"/></proof>
+ <proof prover="0"><result status="valid" time="0.00" steps="12"/></proof>
  </goal>
  <goal name="bdd&#39;vc" expl="VC for bdd" proved="true">
- <proof prover="0"><result status="valid" time="0.01" steps="13"/></proof>
+ <proof prover="0"><result status="valid" time="0.01" steps="35"/></proof>
  </goal>
- <goal name="mk_node&#39;vc" expl="VC for mk_node" proved="true">
- <proof prover="0"><result status="valid" time="0.36" steps="3355"/></proof>
+ <goal name="mk_node&#39;vc" expl="VC for mk_node">
+ <transf name="split_vc" >
+  <goal name="mk_node&#39;vc.0" expl="postcondition" proved="true">
+  <proof prover="0"><result status="valid" time="0.01" steps="41"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.1" expl="postcondition" proved="true">
+  <proof prover="0"><result status="valid" time="0.00" steps="25"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.2" expl="postcondition">
+  <proof prover="0"><result status="timeout" time="5.00"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.3" expl="precondition" proved="true">
+  <proof prover="0"><result status="valid" time="0.01" steps="22"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.4" expl="type invariant" proved="true">
+  <proof prover="0"><result status="valid" time="0.01" steps="28"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.5" expl="type invariant" proved="true">
+  <proof prover="0"><result status="valid" time="0.34" steps="2233"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.6" expl="type invariant">
+  <proof prover="0"><result status="timeout" time="5.00"/></proof>
+  <proof prover="1"><result status="timeout" time="5.00"/></proof>
+  <proof prover="2"><result status="timeout" time="5.00" steps="309578"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.7" expl="postcondition" proved="true">
+  <proof prover="0"><result status="valid" time="0.01" steps="33"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.8" expl="postcondition" proved="true">
+  <proof prover="0"><result status="valid" time="0.01" steps="130"/></proof>
+  </goal>
+  <goal name="mk_node&#39;vc.9" expl="postcondition" proved="true">
+  <proof prover="0"><result status="valid" time="0.01" steps="36"/></proof>
+  </goal>
+ </transf>
  </goal>
 </theory>
 </file>
