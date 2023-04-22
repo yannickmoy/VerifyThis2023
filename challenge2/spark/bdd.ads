@@ -66,10 +66,10 @@ package BDD is
    package Sets is new SPARK.Containers.Formal.Unbounded_Hashed_Sets
      (Node_Acc,
       Hash,
-      Eq_Reflexive => Eq_Reflexive,
-      Eq_Symmetric => Eq_Symmetric,
-      Eq_Transitive => Eq_Transitive,
-      Equivalent_Elements_Symmetric => Eq_Symmetric,
+      Eq_Reflexive                   => Eq_Reflexive,
+      Eq_Symmetric                   => Eq_Symmetric,
+      Eq_Transitive                  => Eq_Transitive,
+      Equivalent_Elements_Symmetric  => Eq_Symmetric,
       Equivalent_Elements_Transitive => Eq_Transitive);
    use Sets;
 
@@ -100,12 +100,13 @@ package BDD is
       Var : Variable;
       N   : out Node_Acc)
    with
-     Pre => B.Length < Count_Type'Last and then not N'Constrained;
+     Pre => B.Length <= Count_Type'Last - 3 and then not N'Constrained;
 
    procedure Mk_Not
      (B : in out Bdd;
       N : in out Node_Acc)
    with
-     Pre => B.Length < Count_Type'Last and then not N'Constrained;
+     Pre => B.Length < Count_Type'Last and then not N'Constrained,
+     Subprogram_Variant => (Structural => N);
 
 end BDD;

@@ -24,8 +24,14 @@ well), starting setting up a memory model, but nothing is proven yet.
 ## Challenge 2
 
 To see the starting solution to challenge 2 in SPARK, go to subdirectory
-`challenge2/spark`. Currently, this leads to an internal error when
-instantiating the container...
+`challenge2/spark`. The lemmas for correctly instantiating a formal unbounded
+hash set were proved on the redefined equality. The only procedure that
+requires termination proof is `Mk_Not`, which is proved with a structural
+subprogram variant. In order to not exceed the bounds of the hashed map,
+preconditions are needed on all procedures, but not stated for `Mk_Not`.
+
+Unfortunately, we hit an internal error when instantiating the container that
+could not be worked around.
 
 To see the solution in Why3, go to subdirectory `challenge2/why3`. The main
 solution in in the `challenge2.mlw` with hash-consing primitive partially
