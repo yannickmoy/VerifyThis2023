@@ -13,7 +13,7 @@ project Lists is
    end Compiler;
 
    package Prove is
-      for Proof_Switches("Ada") use ("-j0", "--level=3");
+      for Proof_Switches("Ada") use ("-j0", "--level=3", "-u", "lists.adb");
    end Prove;
 
 end Lists;
