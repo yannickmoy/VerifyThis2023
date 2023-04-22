@@ -1,0 +1,197 @@
+
+
+module BDD
+
+  use int.Int
+  use option.Option
+
+  (* Remark about the problem:
+     * There is no way to model physical equality in Ocaml.
+     * The hash function is linear time, defeating the entire point.
+
+     The code we verify possess the following adjustements:
+     . nodes are explicitly flagged with an id.
+       This can be thought as the 'address' of the node.
+     . the hash function stop at the ids.
+   *)
+
+  type var = int
+  type node =
+    | Node var node_id node_id
+      (* True, False clash with Why3's booleans. *)
+    | N_True
+    | N_False
+  with node_id = {
+    node_id : int;
+    node_content : node;
+  }
+
+  let predicate equal (n m:node) = match n, m with
+    | N_True, N_True -> true
+    | N_False, N_False -> true
+    | Node nv nl nr, Node mv ml mr ->
+      nv = mv && nl.node_id = ml.node_id && nr.node_id = mr.node_id
+    | _, _ -> false
+    end
+
+  (* Axiomatize hash constructor. *)
+  val function hash_prod (n m:int) : int
+
+  let function hash (n:node) : int = match n with
+    | N_True -> 1
+    | N_False -> 0
+    | Node nv nl nr -> hash_prod nv (hash_prod nl.node_id nr.node_id)
+    end
+
+  (* Properties required for making hash table. *)
+  lemma equal_refl : forall n:node. equal n n
+  lemma equal_symm : forall n m:node. equal n m <-> equal m n
+  lemma equal_trans : forall n m o:node.
+    equal n m -> equal m o -> equal n o
+  lemma hash_congr : forall n m:node. equal n m -> hash n = hash m
+
+
+  (* Axiomatize the (hash-)table implementation.
+     A concrete implementation should
+     essentially be drop-in replacement, for example by cloning the module.
+     (maybe splitting the module in chunks first ?)
+   *)
+  type hash_table 'a = mutable private {}
+  predicate model_mem (h:hash_table 'a) (k:node)
+  val lemma model_mem_congr (h:hash_table 'a) (k1 k2:node)
+    requires { equal k1 k2 }
+    ensures { model_mem h k1 <-> model_mem h k2 }
+  val ghost function model_eval (h:hash_table 'a) (k:node) : 'a
+    requires { model_mem h k }
+  val lemma model_eval_congr (h:hash_table 'a) (k1 k2:node)
+    requires { equal k1 k2 }
+    requires { model_mem h k1 }
+    ensures { model_eval h k1 = model_eval h k2 }
+
+  val function find_opt (h:hash_table 'a) (k:node) : option 'a
+    returns { None -> not (model_mem h k)
+            | Some v -> model_mem h k && model_eval h k = v }
+  val create () : hash_table 'a
+    ensures { forall k:node. not (model_mem result k) }
+  val add (h:hash_table 'a) (k:node) (b:'a) : unit
+    (* Stricter pre-condition than necessary, not a problem if
+       pre-condition is looser at instance. *)
+    requires { not (model_mem h k) }
+    writes   { h }
+    ensures  { model_mem h k && model_eval h k = b }
+    ensures  { forall k':node. not (equal k k') ->
+      model_mem h k' <-> model_mem (old h) k' }
+    ensures  { forall k':node. not (equal k' k) ->
+      model_mem h k' -> model_eval h k' = model_eval (old h) k' }
+
+  (* For faithfulness to original code. *)
+  let compare (x y:int) : int
+    ensures { -1 <= result <= 1 }
+    (* Redundant (but symmetrical) post-condition. *)
+    ensures { x < y <-> result < 0 }
+    ensures { x = y <-> result = 0 }
+    ensures { x > y <-> result > 0 }
+  = if x < y then (-1) else if x = y then 0 else 1
+
+  (* Specify monotonicity. *)
+  predicate sub_hash (h1 h2:hash_table 'a) =
+    forall k:node. model_mem h1 k ->
+      model_mem h2 k && model_eval h2 k = model_eval h1 k
+
+  let rec predicate ordered_after (x:int) (nd:node)
+    variant { nd }
+  =
+    match nd with
+    | Node y l r ->
+      x < y && ordered_after_record y l && ordered_after_record y r
+    | _ -> true
+    end
+  with predicate ordered_after_record (x:int) (nd:node_id)
+    variant { nd }
+  = ordered_after x nd.node_content
+
+  predicate ordered (nd:node) =
+    match nd with
+    | Node y l r -> ordered_after_record y l
+      /\ ordered_after_record y r
+    | _ -> true
+    end
+
+  let rec ghost predicate table_link (h:hash_table node_id) (nd:node_id)
+    variant { nd }
+  =
+    model_mem h nd.node_content &&
+    pure { model_eval h nd.node_content = nd } &&
+    table_link_cons h nd.node_content
+  with ghost predicate table_link_cons (h:hash_table node_id) (nd:node)
+    variant { nd }
+  =
+    match nd with
+    | Node _ l r -> table_link h l && table_link h r
+    | _ -> true
+    end
+
+  let rec lemma table_link_sub (h1 h2:{hash_table node_id}) (nd:node_id)
+    requires { table_link h1 nd }
+    requires { sub_hash h1 h2 }
+    ensures  { table_link h2 nd }
+    variant  { nd }
+  = table_link_sub_cons h1 h2 nd.node_content;
+  with ghost table_link_sub_cons (h1 h2:{hash_table node_id}) (nd:node)
+    requires { table_link_cons h1 nd }
+    requires { sub_hash h1 h2 }
+    ensures  { table_link_cons h2 nd }
+    variant  { nd }
+  = match nd with
+    | Node _ l r -> table_link_sub h1 h2 l; table_link_sub h1 h2 r
+    | _ -> ()
+    end
+
+  let ghost function empty_witness () : {hash_table node_id}
+    ensures { forall nd:node. not (model_mem result nd) }
+  = let x = create () in pure { x }
+
+  type bdd = {
+    table         : hash_table node_id;
+    mutable fresh : int;
+  }
+  (* Incomplete, the perfect id-node correspondance
+     is not yet stated. *)
+  invariant { 0 <= fresh }
+  invariant { forall nd:node.
+    model_mem table nd ->
+    let ev = model_eval table nd in
+    equal nd ev.node_content
+    /\ ev.node_id < fresh
+    /\ table_link table ev
+    /\ ordered ev.node_content
+  } by { table = empty_witness (); fresh = 0 }
+
+  predicate valid_node_id (b:bdd) (n:node_id) =
+    table_link b.table n
+  predicate valid_node (b:bdd) (n:node) =
+    ordered n /\ match n with
+    | Node _ l r ->
+      table_link b.table l /\
+      table_link b.table r
+    | _ -> true
+    end
+
+  let mk_node (b:bdd) (n:node) : node_id
+    requires { valid_node b n }
+    writes   { b.table, b.fresh }
+    ensures  { valid_node_id b result }
+    ensures  { sub_hash (old b).table b.table }
+  = match find_opt b.table n with
+    | Some nd -> nd
+    | None ->
+      let id = b.fresh in
+      let nd = { node_id = id; node_content = n } in
+      b.fresh <- b.fresh + 1;
+      add b.table n nd;
+      nd
+    end
+
+
+end
+

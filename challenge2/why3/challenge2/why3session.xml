@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE why3session PUBLIC "-//Why3//proof session v5//EN"
+"http://why3.lri.fr/why3session.dtd">
+<why3session shape_version="6">
+<prover id="0" name="Alt-Ergo" version="2.4.2" timelimit="5" steplimit="0" memlimit="1000"/>
+<file format="whyml" proved="true">
+<path name=".."/><path name="challenge2.mlw"/>
+<theory name="BDD" proved="true">
+ <goal name="equal_refl" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="80"/></proof>
+ </goal>
+ <goal name="equal_symm" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="161"/></proof>
+ </goal>
+ <goal name="equal_trans" proved="true">
+ <proof prover="0"><result status="valid" time="0.06" steps="1148"/></proof>
+ </goal>
+ <goal name="hash_congr" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="108"/></proof>
+ </goal>
+ <goal name="compare&#39;vc" expl="VC for compare" proved="true">
+ <proof prover="0"><result status="valid" time="0.00" steps="35"/></proof>
+ </goal>
+ <goal name="ordered_after&#39;vc" expl="VC for ordered_after" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="59"/></proof>
+ </goal>
+ <goal name="ordered_after_record&#39;vc" expl="VC for ordered_after_record" proved="true">
+ <proof prover="0"><result status="valid" time="0.00" steps="8"/></proof>
+ </goal>
+ <goal name="table_link&#39;vc" expl="VC for table_link" proved="true">
+ <proof prover="0"><result status="valid" time="0.00" steps="12"/></proof>
+ </goal>
+ <goal name="table_link_cons&#39;vc" expl="VC for table_link_cons" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="57"/></proof>
+ </goal>
+ <goal name="table_link_sub&#39;vc" expl="VC for table_link_sub" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="58"/></proof>
+ </goal>
+ <goal name="table_link_sub_cons&#39;vc" expl="VC for table_link_sub_cons" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="133"/></proof>
+ </goal>
+ <goal name="empty_witness&#39;vc" expl="VC for empty_witness" proved="true">
+ <proof prover="0"><result status="valid" time="0.00" steps="5"/></proof>
+ </goal>
+ <goal name="bdd&#39;vc" expl="VC for bdd" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="13"/></proof>
+ </goal>
+ <goal name="mk_node&#39;vc" expl="VC for mk_node" proved="true">
+ <proof prover="0"><result status="valid" time="0.36" steps="3355"/></proof>
+ </goal>
+</theory>
+</file>
+</why3session>

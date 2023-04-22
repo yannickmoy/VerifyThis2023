@@ -1,0 +1,58 @@
+
+
+module BDD
+
+  use int.Int
+  use option.Option
+
+  (* Why3 do not possess means to test for physical equality.
+     We model it through a ghost identifiant that can be used
+     to 'decorate' nodes, flagging them with an identity. Only
+     nodes that have been decorated with the same identity are ever
+     guaranteed to be equal, decorating the same node twice is not
+     known to Why3 to yield the same address. *)
+
+  type address = private {}
+  type address_map 'a = mutable private {}
+  predicate known_address (m:address_map 'a) (a:address)
+  val ghost function address_binding (m:address_map 'a) (a:address) : 'a
+    requires { known_address m a }
+  (* /!\ this type should really be private,
+       but is not because we cannot make the algebraic fixed-point
+       later (there is no way to tell Why3 that this type is 'positive'
+       and fine for fixed-point !).
+     So the implementation correctness is reliant on values of type
+       'decorated' never being created directly.
+   *)
+  type decorated 'a = {
+    main : 'a;
+    ghost decorator : address;
+  }
+  val add_address (ghost m:address_map 'a) (x:'a) : decorated 'a
+    writes { m }
+    ensures { result.main = x }
+    ensures { known_address m result.decorator }
+    ensures { address_binding m result.decorator = x }
+    ensures { forall l. known_address (old m) l ->
+      known_address m l && address_binding m result.decorator = x }
+  val physical_equal (ghost m:address_map 'a) (x y:decorated 'a) : bool
+    requires { known_address m x.decorator }
+    requires { known_address m y.decorator }
+    ensures  { result = (x.decorator = y.decorator) }
+
+  type var = int
+  type node =
+    | Node var (decorated node) (decorated node)
+    | N_True
+    | N_False
+
+  (*let equal n m = match n, m with
+    | N_True, N_True -> true
+    | N_False, N_False -> true
+    | Node n, Node m ->
+      n.var = m.var && n.right == m.right && n.left == m.left
+    | _ -> false*)
+
+
+end
+
