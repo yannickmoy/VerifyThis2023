@@ -3,7 +3,7 @@ Solutions of team The Sparkans for VerifyThis 2023 competition
 
 ## Challenge 1
 
-To prove the solution in SPARK, go to subdirectory `challenge1` and run
+To prove the solution in SPARK, go to subdirectory `challenge1/spark` and run
 
 ```
 gnatprove -P lists.gpr
