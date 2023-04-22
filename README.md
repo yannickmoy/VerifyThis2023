@@ -20,3 +20,15 @@ satisfies its functional specification.
 To see the solution in Why3, go to subdirectory `challenge1/why3`. It contains
 a likely separation logic description of the input (covering lasso case as
 well), starting setting up a memory model, but nothing is proven yet.
+
+## Challenge 2
+
+To see the starting solution to challenge 2 in SPARK, go to subdirectory
+`challenge2/spark`. Currently, this leads to an internal error when
+instantiating the container...
+
+To see the solution in Why3, go to subdirectory `challenge2/why3`. The main
+solution in in the `challenge2.mlw` with hash-consing primitive partially
+proved. The code was modified to use ID instead of addresses, and shortcutting
+the hash to constant time. The `oldversion.mlw` contains an early attempt to
+model physical equality in Why3.
