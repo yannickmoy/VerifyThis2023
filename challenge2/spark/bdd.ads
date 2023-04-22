@@ -31,17 +31,35 @@ package BDD is
      Annotate => (GNATprove, Intentional, "memory leak",
                   "allocation of access-to-constant is not reclaimed");
 
-   function Hash (N : Node_Acc) return Hash_Type is (0);
-
    function "=" (N, M : Node_Acc) return Boolean is
      (if N.Kind /= M.Kind then False
       elsif N.Kind in Node_False | Node_True then True
       else
         N.Var = M.Var and then
-        N.Left.all = M.Left.all and then
-        N.Right.all = M.Right.all)
+        N.Left = M.Left and then
+        N.Right = M.Right)
    with
      Subprogram_Variant => (Structural => N);
+
+   function Copy (N : Node_Acc) return Node_Acc
+   with
+     Ghost,
+     Import,
+     Global => null,
+     Annotate => (GNATprove, Always_Return),
+     Post => Copy'Result = N;
+
+   True_Node  : constant Node_Acc := New_Node (Node'(Kind => Node_True));
+   False_Node : constant Node_Acc := New_Node (Node'(Kind => Node_False));
+
+   type Node_Wrap is record
+     Acc : Node_Acc;
+   end record;
+
+   function "=" (N, M : Node_Wrap) return Boolean is
+     (N.Acc = M.Acc);
+
+   function Hash (N : Node_Wrap) return Hash_Type is (0);
 
    procedure Eq_Reflexive (N : Node_Acc)
    with
@@ -49,10 +67,21 @@ package BDD is
      Subprogram_Variant => (Structural => N),
      Post => N = N;
 
+   procedure Eq_Reflexive (N : Node_Wrap)
+   with
+     Ghost,
+     Post => N = N;
+
    procedure Eq_Symmetric (N, M : Node_Acc)
    with
      Ghost,
      Subprogram_Variant => (Structural => N),
+     Pre  => N = M,
+     Post => M = N;
+
+   procedure Eq_Symmetric (N, M : Node_Wrap)
+   with
+     Ghost,
      Pre  => N = M,
      Post => M = N;
 
@@ -63,8 +92,14 @@ package BDD is
      Pre  => N = M and M = P,
      Post => M = P;
 
+   procedure Eq_Transitive (N, M, P : Node_Wrap)
+   with
+     Ghost,
+     Pre  => N = M and M = P,
+     Post => M = P;
+
    package Sets is new SPARK.Containers.Formal.Unbounded_Hashed_Sets
-     (Node_Acc,
+     (Node_Wrap,
       Hash,
       Eq_Reflexive                   => Eq_Reflexive,
       Eq_Symmetric                   => Eq_Symmetric,
@@ -77,36 +112,31 @@ package BDD is
 
    procedure Mk_Node (B : in out Bdd; N : in out Node_Acc)
    with
-     Pre => B.Length < Count_Type'Last;
+     Post => N = Copy (N)'Old;
 
    procedure Mk_True (B : in out Bdd; N : out Node_Acc)
    with
-     Pre => B.Length < Count_Type'Last and then not N'Constrained;
+     Post => N = True_Node;
 
    procedure Mk_False (B : in out Bdd; N : out Node_Acc)
    with
-     Pre => B.Length < Count_Type'Last and then not N'Constrained;
+     Post => N = False_Node;
 
    procedure Mk_If
      (B           : in out Bdd;
       Var         : Variable;
       Left, Right : Node_Acc;
-      N           : out Node_Acc)
-   with
-     Pre => B.Length < Count_Type'Last and then not N'Constrained;
+      N           : out Node_Acc);
 
    procedure Mk_Var
      (B   : in out Bdd;
       Var : Variable;
-      N   : out Node_Acc)
-   with
-     Pre => B.Length <= Count_Type'Last - 3 and then not N'Constrained;
+      N   : out Node_Acc);
 
    procedure Mk_Not
      (B : in out Bdd;
       N : in out Node_Acc)
    with
-     Pre => B.Length < Count_Type'Last and then not N'Constrained,
      Subprogram_Variant => (Structural => N);
 
 end BDD;

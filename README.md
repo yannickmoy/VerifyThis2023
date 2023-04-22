@@ -23,15 +23,17 @@ well), starting setting up a memory model, but nothing is proven yet.
 
 ## Challenge 2
 
-To see the starting solution to challenge 2 in SPARK, go to subdirectory
-`challenge2/spark`. The lemmas for correctly instantiating a formal unbounded
-hash set were proved on the redefined equality. The only procedure that
-requires termination proof is `Mk_Not`, which is proved with a structural
-subprogram variant. In order to not exceed the bounds of the hashed map,
-preconditions are needed on all procedures, but not stated for `Mk_Not`.
+To see the solution in SPARK, go to subdirectory `challenge2/spark`. The lemmas
+for correctly instantiating a formal unbounded hash set were proved on the
+redefined equality. The only procedure that requires termination proof is
+`Mk_Not`, for which the structural subprogram variant is justified on the two
+recursive calls, as they are made on copied of the fields `Left` and
+`Right`. It is assumed that there is enough memory to always allocate more
+nodes.
 
-Unfortunately, we hit an internal error when instantiating the container that
-could not be worked around.
+We hit an internal error when instantiating the container with `Node_Acc`. The
+workaround was to use a wrapper record `Node_Wrap` as element of the hashed
+set.
 
 To see the solution in Why3, go to subdirectory `challenge2/why3`. The main
 solution in in the `challenge2.mlw` with hash-consing primitive partially
