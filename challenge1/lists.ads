@@ -1,3 +1,6 @@
+pragma Unevaluated_Use_Of_Old (Allow);
+
+with SPARK.Big_Integers; use SPARK.Big_Integers;
 with SPARK.Containers.Functional.Infinite_Sequences;
 with SPARK.Big_Intervals; use SPARK.Big_Intervals;
 
@@ -21,7 +24,10 @@ package Lists is
 
    procedure Reverse_List (L : in out List_Acc)
    with
-     Annotate => (GNATprove, Always_Return);
---     Post =>
+     Annotate => (GNATprove, Always_Return),
+     Post =>
+       Model (L).Last = Model (L)'Old.Last and then
+       (for all J in Interval'(1, Model (L).Last) =>
+          Model (L).Get (J) = Model (L)'Old.Get (Model (L).Last - J + 1));
 
 end Lists;

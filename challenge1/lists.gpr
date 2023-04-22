@@ -1,6 +1,9 @@
 with "sparklib";
 
 project Lists is
+
+   for Object_Dir use "obj";
+
    package Builder is
       for Global_Configuration_Pragmas use "spark.adc";
    end Builder;
