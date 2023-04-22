@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE why3session PUBLIC "-//Why3//proof session v5//EN"
+"http://why3.lri.fr/why3session.dtd">
+<why3session shape_version="6">
+<prover id="0" name="Alt-Ergo" version="2.4.2" timelimit="5" steplimit="0" memlimit="1000"/>
+<file format="whyml" proved="true">
+<path name=".."/><path name="list_rev.mlw"/>
+<theory name="List_Rev" proved="true">
+ <goal name="memory_model&#39;vc" expl="VC for memory_model" proved="true">
+ <proof prover="0"><result status="valid" time="0.00" steps="2"/></proof>
+ </goal>
+ <goal name="valid_until&#39;vc" expl="VC for valid_until" proved="true">
+ <proof prover="0"><result status="valid" time="0.00" steps="6"/></proof>
+ </goal>
+ <goal name="valid_unfold&#39;vc" expl="VC for valid_unfold" proved="true">
+ <proof prover="0"><result status="valid" time="0.01" steps="60"/></proof>
+ </goal>
+</theory>
+</file>
+</why3session>

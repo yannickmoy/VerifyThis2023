@@ -1,0 +1,111 @@
+
+(* Setup start for memory-model version in Why3, to handle lasso case
+     as well.
+   Difficulty: mimic the abstraction provided by separation logic.
+     In terms of the list-segment predicate of separation logic:
+     lseg(l,t) := l <> t ->
+       exists n, v. acc(l->next,n) * acc(l->value,v) * lseg(n,t)
+     the abstraction of a list is:
+     lseg(l,null)
+     \/ exists l2. lseg(l,l2) *
+          exists n, v. acc(l2->next,n) * acc(l->value,v) * lseg(n,l2)
+     Re-creating this abstraction (with correct separation of frames !)
+       is the tricky part here, reversal can be proven correct using
+       ghost management for the case analysis/lasso source witness
+       (l2 above).
+
+  Current status: started setting up memory model/list segments.
+
+*)
+
+
+module List_Rev
+
+  use int.Int
+
+  (* Addresses *)
+
+  type address = private {}
+  val function null : address
+  val is_null (a:address) : bool
+    ensures { result = (a = null) }
+
+  (* Memory *)
+
+  type memory_model = private {
+    mutable allocated : address -> bool;
+    mutable value     : address -> int;
+    mutable next      : address -> address;
+  } invariant { not (allocated null) }
+    by { allocated = (fun _ -> false); value = (fun _ -> 0); next = (fun _ -> null) }
+  val ghost model : memory_model
+  val read_value (l:address) : int
+    reads { model }
+    requires { model.allocated l }
+    ensures { result = model.value l }
+  val read_next (l:address) : address
+    reads { model }
+    requires { model.allocated l }
+    ensures { result = model.next l }
+  val set_value (l:address) (n:int) : unit
+    writes { model.value }
+    requires { model.allocated l }
+    ensures { model.value l = n }
+    ensures { forall i:address. i <> l ->
+      model.value i = (old model.value) i }
+  val set_next (l:address) (n:address) : unit
+    writes { model.next }
+    requires { model.allocated l }
+    ensures { model.next l = n }
+    ensures { forall i:address. i <> l ->
+      model.next i = (old model.next) i }
+
+  (* Finiteness: we can enumerate memory cells
+     from a given configuration. *)
+
+  val ghost finite_memory () :
+    (bound:int, enum:int -> address, ind:address -> int)
+    reads { model }
+    ensures { 0 <= bound }
+    ensures { forall l:address. model.allocated l -> ind l < bound }
+    ensures { forall l:address. model.allocated l -> enum (ind l) = l }
+    ensures { forall n:int. 0 <= n < bound -> model.allocated (enum n) }
+    ensures { forall n:int. 0 <= n < bound -> ind (enum n) = n }
+
+
+  (* List segments:
+     (ok_...) Defines a valid list segment
+     (in_...) Defines footprint of a list segment (for framing) *)
+  inductive ok_lseg (l t:address) (m:memory_model) =
+    | OkLsegNil : forall l:address, m:memory_model. ok_lseg l l m
+    | OkLsegCons : forall l t:address, m:memory_model. l <> t ->
+      m.allocated l -> ok_lseg (m.next l) t m -> ok_lseg l t m
+  inductive in_lseg (l t:address) (m:memory_model) (l0:address) =
+    | InLsegHere : forall l t:address, m:memory_model. l <> t ->
+      in_lseg l t m l
+    | InLsegCons : forall l t:address, m:memory_model, l0:address.
+      l <> t -> in_lseg (m.next l) t m l0 -> in_lseg l t m l0
+
+  (* Alternative input spec (?): un-conditional validity. *)
+  let rec ghost predicate valid_until (l:address) (n:int) (m:memory_model)
+    variant { n }
+  = pure { l = null }
+    || (m.allocated l && (n <= 0 || valid_until (m.next l) (n-1) m))
+
+  predicate valid (l:address) (m:memory_model) =
+    forall n:int. valid_until l n m
+
+  let lemma valid_unfold (l:address) (m:memory_model)
+    ensures { valid l m =
+      (l = null || (m.allocated l && (valid (m.next l) m))) }
+  = ()
+
+  (* TODO:
+     . Under un-condition validity, obtain the (separated !)
+       list segments as explained in header.
+     . prove list reversal based on this. *)
+
+
+
+end
+

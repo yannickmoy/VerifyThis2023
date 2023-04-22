@@ -16,3 +16,7 @@ gnatprove -P lists.gpr
 On an 8 cores Linux laptop, it terminates in less that 2 minutes, and proves
 that the SPARK implementation is free of run-time errors, terminates and
 satisfies its functional specification.
+
+To see the solution in Why3, go to subdirectory `challenge1/why3`. It contains
+a likely separation logic description of the input (covering lasso case as
+well), starting setting up a memory model, but nothing is proven yet.
