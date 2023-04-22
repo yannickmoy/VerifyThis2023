@@ -1,3 +1,6 @@
+-- Only handle the case of null-terminated finite lists, which corresponds to
+-- the only List objects that the ownership rules of SPARK allow to build.
+
 pragma Unevaluated_Use_Of_Old (Allow);
 
 with SPARK.Big_Integers; use SPARK.Big_Integers;
