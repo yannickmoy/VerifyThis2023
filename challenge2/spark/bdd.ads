@@ -9,6 +9,9 @@ package BDD is
 
    type Variable is new Integer;
 
+   type Environment is array (Variable) of Boolean with Ghost;
+   Global_Env : Environment := (others => False) with Ghost;
+
    type Node;
    type Node_Acc is not null access constant Node;
    type Node_Kind is (Node_Var, Node_False, Node_True);
@@ -110,6 +113,16 @@ package BDD is
 
    subtype Bdd is Set;
 
+   function Eval (Env : Environment; N : Node_Acc) return Boolean is
+     (case N.Kind is
+         when Node_False => False,
+         when Node_True  => True,
+         when Node_Var   =>
+            (if Env (N.Var) then Eval (Env, N.Left) else Eval (Env, N.Right)))
+   with
+     Ghost,
+     Subprogram_Variant => (Structural => N);
+
    procedure Mk_Node (B : in out Bdd; N : in out Node_Acc)
    with
      Post => N = Copy (N)'Old;
@@ -126,7 +139,10 @@ package BDD is
      (B           : in out Bdd;
       Var         : Variable;
       Left, Right : Node_Acc;
-      N           : out Node_Acc);
+      N           : out Node_Acc)
+   with
+     Post => Eval (Global_Env, N) =
+       (if Global_Env (Var) then Eval (Global_Env, Left) else Eval (Global_Env, Right));
 
    procedure Mk_Var
      (B   : in out Bdd;
